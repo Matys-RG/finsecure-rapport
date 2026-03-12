@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture Réseau — FinSecure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1526;
+    --panel: #131929;
+    --border: #1e2d4a;
+    --accent: #00d4ff;
+    --accent2: #0088cc;
+    --green: #00ff88;
+    --orange: #ff9900;
+    --red: #ff4466;
+    --yellow: #ffd700;
+    --text: #c8d8f0;
+    --muted: #5a7090;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-main: 'Rajdhani', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-main);
+    min-height: 100vh;
+    padding: 32px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,212,255,0.4);
+  }
+  .header p {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+  .header .badge {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 14px;
+    border: 1px solid var(--accent2);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    background: rgba(0,136,204,0.1);
+  }
+
+  /* LAYOUT */
+  .diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    position: relative;
+  }
+
+  /* INTERNET BLOCK */
+  .internet-block {
+    background: linear-gradient(135deg, #0d1830, #0a1220);
+    border: 1px solid var(--accent2);
+    border-radius: 12px;
+    padding: 14px 40px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,136,204,0.2);
+    position: relative;
+    z-index: 2;
+  }
+  .internet-block .label {
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .internet-block .title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+  .internet-block .sub {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* CONNECTOR LINES */
+  .connector {
+    width: 2px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--accent2), var(--border));
+    position: relative;
+    z-index: 1;
+  }
+  .connector::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--accent2);
+  }
+
+  .connector-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0;
+  }
+  .connector-label .line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .connector-label span {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* NGINX PROXY */
+  .nginx-block {
+    background: linear-gradient(135deg, #0f1f10, #0a1a0a);
+    border: 1px solid #1a5c1a;
+    border-radius: 12px;
+    padding: 16px 32px;
+    text-align: center;
+    box-shadow: 0 0 16px rgba(0,255,136,0.1);
+    min-width: 320px;
+  }
+  .nginx-block .service-tag {
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    color: var(--green);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .nginx-block .title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 2px;
+  }
+  .nginx-block .meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: #4a9a5a;
+    margin-top: 4px;
+  }
+  .nginx-block .port-badge {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 10px;
+    border: 1px solid #1a5c1a;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--green);
+    background: rgba(0,255,136,0.05);
+  }
+  .nginx-block .info-leak {
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--orange);
+    background: rgba(255,153,0,0.07);
+    border: 1px solid rgba(255,153,0,0.2);
+    border-radius: 6px;
+    padding: 4px 10px;
+  }
+
+  /* SERVICES GRID */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 1100px;
+    margin-top: 0;
+  }
+
+  /* SERVICE CARD */
+  .service-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .service-card:hover {
+    border-color: var(--accent2);
+  }
+  .service-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .service-card .service-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--accent);
+  }
+  .service-card .port {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.2);
+    color: var(--accent);
+  }
+  .service-card .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  .service-card .row .k {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .service-card .row .v {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text);
+  }
+  .service-card .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 10px 0;
+  }
+  .service-card .cve-section .cve-title {
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+  .cve-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin: 2px 2px 2px 0;
+  }
+  .cve-critical { background: rgba(255,68,102,0.15); border: 1px solid rgba(255,68,102,0.4); color: #ff6688; }
+  .cve-high     { background: rgba(255,100,50,0.15); border: 1px solid rgba(255,100,50,0.4); color: #ff7755; }
+  .cve-medium   { background: rgba(255,153,0,0.12);  border: 1px solid rgba(255,153,0,0.35); color: var(--orange); }
+  .cve-none     { background: rgba(0,255,136,0.08);  border: 1px solid rgba(0,255,136,0.25); color: var(--green); }
+  .cve-eol      { background: rgba(255,215,0,0.08);  border: 1px solid rgba(255,215,0,0.3);  color: var(--yellow); }
+
+  .info-divulguee {
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--orange);
+    background: rgba(255,153,0,0.06);
+    border: 1px solid rgba(255,153,0,0.18);
+    border-radius: 6px;
+    padding: 5px 8px;
+    line-height: 1.6;
+  }
+  .info-divulguee .info-title {
+    color: #ffbb44;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* CONNECTOR MULTI */
+  .multi-connector {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    max-width: 1100px;
+    position: relative;
+    height: 50px;
+    margin: 0;
+  }
+  .multi-connector svg {
+    width: 100%;
+    height: 50px;
+    overflow: visible;
+  }
+
+  /* BOTTOM DATABASES */
+  .databases-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .db-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-top: 3px solid;
+  }
+  .db-card.postgres { border-top-color: #336699; }
+  .db-card.mongo    { border-top-color: #4db33d; }
+  .db-card.redis    { border-top-color: #cc2222; }
+
+  .db-card .db-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .db-card .db-name {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .db-card.postgres .db-name { color: #5599cc; }
+  .db-card.mongo    .db-name { color: #4db33d; }
+  .db-card.redis    .db-name { color: #ee4444; }
+
+  .db-card .port {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .db-card .row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  .db-card .row .k {
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .db-card .row .v {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text);
+  }
+  .db-card .divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 32px;
+    padding: 16px 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    max-width: 1100px;
+    width: 100%;
+  }
+  .legend-title {
+    width: 100%;
+    text-align: center;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  /* SECTION TITLE */
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 6px 0 2px;
+  }
+
+  /* PROXY WARNING */
+  .proxy-warning {
+    background: rgba(255,68,102,0.08);
+    border: 1px solid rgba(255,68,102,0.3);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    color: #ff6688;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FinSecure — Architecture Réseau</h1>
+  <p>PHASE 1 · RECONNAISSANCE PASSIVE · SCHÉMA ANNOTÉ</p>
+  <span class="badge">Scan nmap 7.98 · 2026-03-12</span>
+</div>
+
+<div class="diagram">
+
+  <!-- INTERNET -->
+  <div class="internet-block">
+    <div class="label">Accès externe</div>
+    <div class="title">🌐 INTERNET / CLIENT</div>
+    <div class="sub">Attaquant / Utilisateur</div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- NGINX REVERSE PROXY -->
+  <div class="section-label">Couche exposition</div>
+  <div class="nginx-block">
+    <div class="service-tag">Reverse Proxy / Load Balancer</div>
+    <div class="title">NGINX 1.21.6</div>
+    <div class="meta">finsecure_nginx · nginx:1.21</div>
+    <div class="port-badge">:8888 → :80 (interne)</div>
+    <div class="info-leak">⚠️ Header exposé : Server: nginx/1.21.6</div>
+    <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; justify-content:center;">
+      <span class="cve-badge cve-medium">CVE-2022-41741 · Medium</span>
+      <span class="cve-badge cve-medium">CVE-2022-41742 · Medium</span>
+    </div>
+    <div style="margin-top:6px; font-family:var(--font-mono); font-size:0.62rem; color:#7a9080; background:rgba(0,255,136,0.04); border:1px solid rgba(0,255,136,0.1); border-radius:6px; padding:4px 10px;">
+      ⚙️ Condition : applicables si module <strong>ngx_http_mp4_module</strong> activé dans la config
+    </div>
+  </div>
+
+  <!-- MULTI CONNECTOR SVG -->
+  <div class="multi-connector" style="max-width:1100px; width:100%;">
+    <svg viewBox="0 0 1100 50" preserveAspectRatio="none">
+      <!-- ligne centrale verticale -->
+      <line x1="550" y1="0" x2="550" y2="15" stroke="#1e2d4a" stroke-width="2"/>
+      <!-- ligne horizontale -->
+      <line x1="183" y1="15" x2="917" y2="15" stroke="#1e2d4a" stroke-width="2"/>
+      <!-- branches vers chaque service -->
+      <line x1="183" y1="15" x2="183" y2="50" stroke="#1e2d4a" stroke-width="2"/>
+      <line x1="550" y1="15" x2="550" y2="50" stroke="#1e2d4a" stroke-width="2"/>
+      <line x1="917" y1="15" x2="917" y2="50" stroke="#1e2d4a" stroke-width="2"/>
+      <!-- flèches -->
+      <polygon points="183,50 178,42 188,42" fill="#1e2d4a"/>
+      <polygon points="550,50 545,42 555,42" fill="#1e2d4a"/>
+      <polygon points="917,50 912,42 922,42" fill="#1e2d4a"/>
+    </svg>
+  </div>
+
+  <!-- SERVICES APPLICATIFS -->
+  <div class="section-label">Couche applicative</div>
+  <div class="services-grid">
+
+    <!-- WEBAPP Flask -->
+    <div class="service-card">
+      <div class="card-header">
+        <div class="service-name">WEBAPP</div>
+        <div class="port">:5000</div>
+      </div>
+      <div class="row"><span class="k">Conteneur</span><span class="v">finsecure_webapp</span></div>
+      <div class="row"><span class="k">Techno</span><span class="v">Flask + Werkzeug</span></div>
+      <div class="row"><span class="k">Version</span><span class="v">Werkzeug 2.1.2 / Python 3.9.25</span></div>
+      <div class="row"><span class="k">Image</span><span class="v">challenge_48h-webapp</span></div>
+      <div class="divider"></div>
+      <div class="cve-section">
+        <div class="cve-title">CVE</div>
+        <span class="cve-badge cve-high">CVE-2023-25577 · High 7.5</span>
+        <span class="cve-badge cve-medium">CVE-2023-23934 · Low 2.6</span>
+      </div>
+      <div class="info-divulguee">
+        <span class="info-title">⚠️ Info divulguée passivement</span>
+        Server: Werkzeug/2.1.2 Python/3.9.25
+      </div>
+    </div>
+
+    <!-- API Node.js -->
+    <div class="service-card">
+      <div class="card-header">
+        <div class="service-name">API</div>
+        <div class="port">:3000</div>
+      </div>
+      <div class="row"><span class="k">Conteneur</span><span class="v">finsecure_api</span></div>
+      <div class="row"><span class="k">Techno</span><span class="v">Node.js + Express</span></div>
+      <div class="row"><span class="k">Version</span><span class="v">Express 4.22.1</span></div>
+      <div class="row"><span class="k">Image</span><span class="v">challenge_48h-api</span></div>
+      <div class="divider"></div>
+      <div class="cve-section">
+        <div class="cve-title">CVE</div>
+        <span class="cve-badge cve-none">✓ Aucune CVE connue</span>
+      </div>
+    </div>
+
+    <!-- ADMINER -->
+    <div class="service-card">
+      <div class="card-header">
+        <div class="service-name">ADMINER</div>
+        <div class="port">:8080</div>
+      </div>
+      <div class="row"><span class="k">Conteneur</span><span class="v">finsecure_adminer</span></div>
+      <div class="row"><span class="k">Techno</span><span class="v">Adminer (PHP CLI)</span></div>
+      <div class="row"><span class="k">Version</span><span class="v">Adminer 4.8.1 / PHP 7.4.33</span></div>
+      <div class="row"><span class="k">Image</span><span class="v">adminer:4.8.1</span></div>
+      <div class="divider"></div>
+      <div class="cve-section">
+        <div class="cve-title">CVE</div>
+        <span class="cve-badge cve-critical">CVE-2025-43960 · Critical 8.6</span>
+      </div>
+      <div class="proxy-warning">🚨 OPEN PROXY détecté · méthode CONNECTION exposée</div>
+    </div>
+
+    <!-- PORTAINER -->
+    <div class="service-card" style="grid-column: 1 / 2;">
+      <div class="card-header">
+        <div class="service-name">PORTAINER</div>
+        <div class="port">:9000</div>
+      </div>
+      <div class="row"><span class="k">Conteneur</span><span class="v">finsecure_portainer</span></div>
+      <div class="row"><span class="k">Techno</span><span class="v">Portainer CE (Golang)</span></div>
+      <div class="row"><span class="k">Version</span><span class="v">2.9.3</span></div>
+      <div class="row"><span class="k">Image</span><span class="v">portainer/portainer-ce:2.9.3</span></div>
+      <div class="divider"></div>
+      <div class="cve-section">
+        <div class="cve-title">CVE</div>
+        <span class="cve-badge cve-medium">CVE-2024-33661 · Medium</span>
+      </div>
+      <div class="info-divulguee">
+        <span class="info-title">⚠️ Info divulguée passivement</span>
+        HTML source + liens internes exposés via fingerprint
+      </div>
+    </div>
+
+    <!-- SPACER -->
+    <div style="grid-column: 2 / 4;"></div>
+
+  </div>
+
+  <!-- CONNECTOR vers BDD -->
+  <div class="multi-connector" style="max-width:1100px; width:100%; margin-top:8px;">
+    <svg viewBox="0 0 1100 50" preserveAspectRatio="none">
+      <line x1="550" y1="0" x2="550" y2="15" stroke="#1e2d4a" stroke-width="2"/>
+      <line x1="183" y1="15" x2="917" y2="15" stroke="#1e2d4a" stroke-width="2"/>
+      <line x1="183" y1="15" x2="183" y2="50" stroke="#1e2d4a" stroke-width="2"/>
+      <line x1="550" y1="15" x2="550" y2="50" stroke="#1e2d4a" stroke-width="2"/>
+      <line x1="917" y1="15" x2="917" y2="50" stroke="#1e2d4a" stroke-width="2"/>
+      <polygon points="183,50 178,42 188,42" fill="#1e2d4a"/>
+      <polygon points="550,50 545,42 555,42" fill="#1e2d4a"/>
+      <polygon points="917,50 912,42 922,42" fill="#1e2d4a"/>
+    </svg>
+  </div>
+
+  <!-- DATABASES -->
+  <div class="section-label">Couche données</div>
+  <div class="databases-row">
+
+    <!-- PostgreSQL -->
+    <div class="db-card postgres">
+      <div class="db-header">
+        <div class="db-name">🐘 PostgreSQL</div>
+        <div class="port">:5432</div>
+      </div>
+      <div class="row"><span class="k">Conteneur</span><span class="v">finsecure_postgres</span></div>
+      <div class="row"><span class="k">Version</span><span class="v">13.23</span></div>
+      <div class="row"><span class="k">Image</span><span class="v">postgres:13</span></div>
+      <div class="divider"></div>
+      <span class="cve-badge cve-none">✓ Aucune CVE</span>
+      <span class="cve-badge cve-eol" style="margin-top:4px; display:inline-block;">⚠️ END-OF-LIFE</span>
+    </div>
+
+    <!-- MongoDB -->
+    <div class="db-card mongo">
+      <div class="db-header">
+        <div class="db-name">🍃 MongoDB</div>
+        <div class="port">:27017</div>
+      </div>
+      <div class="row"><span class="k">Conteneur</span><span class="v">finsecure_mongo</span></div>
+      <div class="row"><span class="k">Version</span><span class="v">5.0.32</span></div>
+      <div class="row"><span class="k">Image</span><span class="v">mongo:5.0</span></div>
+      <div class="divider"></div>
+      <span class="cve-badge cve-none">✓ Aucune CVE</span>
+      <span class="cve-badge cve-eol" style="margin-top:4px; display:inline-block;">⚠️ END-OF-LIFE</span>
+      <div class="info-divulguee" style="margin-top:8px;">
+        <span class="info-title">⚠️ Info divulguée passivement</span>
+        BDD exposées sans auth : admin, config, local, finsecure · Build info OpenSSL + OS visible
+      </div>
+    </div>
+
+    <!-- Redis -->
+    <div class="db-card redis">
+      <div class="db-header">
+        <div class="db-name">🔴 Redis</div>
+        <div class="port">:6379</div>
+      </div>
+      <div class="row"><span class="k">Conteneur</span><span class="v">finsecure_redis</span></div>
+      <div class="row"><span class="k">Version</span><span class="v">6.2.21</span></div>
+      <div class="row"><span class="k">Image</span><span class="v">redis:6.2</span></div>
+      <div class="divider"></div>
+      <span class="cve-badge cve-none">✓ Aucune CVE</span>
+    </div>
+
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-title">Légende</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff6688;"></div> CVE Critical</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff7755;"></div> CVE High</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff9900;"></div> CVE Medium</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#00ff88;"></div> Aucune CVE</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ffd700;"></div> End-of-Life</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff4466;"></div> Open Proxy</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff9900;"></div> Info divulguée</div>
+  </div>
+
+</div>
+
+</body>
+</html>
